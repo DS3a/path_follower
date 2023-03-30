@@ -30,7 +30,7 @@ impl Path {
             match &mut min_dist {
                 Some(dist_) => {
                     let dist = get_dist(point, self.path_vector[pose_index]);
-                    if (*dist_ > dist) {
+                    if *dist_ > dist {
                         min_dist = Some(dist);
                         min_dist_ind = pose_index;
                     }
