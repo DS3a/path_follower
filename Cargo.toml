@@ -10,6 +10,9 @@ path = "src/pure_pursuit.rs"
 
 [dependencies]
 anyhow = "*"
+dynamics_solver = {git = "https://github.com/DS3a/dynamics_solver.git"}
+nalgebra = "0.32.2"
+
 
 [dependencies.rclrs]
 version = "*"
