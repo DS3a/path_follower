@@ -138,7 +138,7 @@ dependencies = [
 [[package]]
 name = "dynamics_solver"
 version = "0.1.0"
-source = "git+https://github.com/DS3a/dynamics_solver.git#62069461f15923b001abb1e074320ee73d85ffe8"
+source = "git+https://github.com/DS3a/dynamics_solver.git#829b602a78e1cfad7fac6bd57655b4e104ec4481"
 dependencies = [
  "approx",
  "nalgebra",

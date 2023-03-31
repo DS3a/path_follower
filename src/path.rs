@@ -5,6 +5,18 @@ fn get_dist(a: Vector2<f64>, b: Vector2<f64>) -> f64 {
     ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2)).powf(0.5)
 }
 
+fn perpendicular_distance(point_a: &Vector2<f64>, point_b: &Vector2<f64>, point_c: &Vector2<f64>) -> f64 {
+    // Find the equation of the line joining point_a and point_b
+    let slope = (point_b.y - point_a.y) / (point_b.x - point_a.x);
+    let y_intercept = point_a.y - slope * point_a.x;
+
+    println!("The line equation is y = {}x + {}", &slope, &y_intercept);
+
+    let dist: f64 = (point_c.x - (slope * point_c.y) - y_intercept) / (1f64 + slope.powi(2)).powf(0.5);
+    println!("The distance between point_c and the line is : {}", &dist);
+    dist
+}
+
 pub struct Path {
     path_vector: Vec<Vector2<f64>>,
 }
@@ -47,5 +59,14 @@ impl Path {
         );
 
         (self.path_vector[min_dist_ind], min_dist_ind)
+    }
+
+    // TODO finish this function
+    pub fn get_path_deviation(&self, state: Vector2<f64>) -> (bool, f64) {
+
+    }
+
+    pub fn get_path_size(&self) -> usize {
+        self.path_vector.len()
     }
 }
