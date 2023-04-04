@@ -58,7 +58,7 @@ fn main() -> Result<(), Error> {
         "/path_local",
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: PathMsg| {
-            println!("received path");
+            // println!("received path");
             let path_to_follow = path::Path::new(msg);
             // path_to_follow.find_closest_point(Vector2::new(0.2f64, 0f64));
             *path_subscription_path_ptr.lock().unwrap() = Some(path_to_follow);
@@ -79,7 +79,7 @@ fn main() -> Result<(), Error> {
     let odom_subscription_min_lin_x_ptr = Arc::clone(&min_lin_x_ptr);
     let odom_subscription_cmd_vel_publisher_ptr = Arc::clone(&cmd_vel_publisher_ptr);
     let _odom_subscription = node.create_subscription(
-        "/Odometry/local",
+        "/odometry/filtered",
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: OdometryMsg| {
 
@@ -119,7 +119,7 @@ fn main() -> Result<(), Error> {
             }
 
             std::mem::drop(reference_odom);
-            println!("The current state is : {:?}", &current_state);
+            // println!("The current state is : {:?}", &current_state);
 
             let mut vel_cmd = TwistMsg::default();
 
@@ -131,6 +131,7 @@ fn main() -> Result<(), Error> {
                     match path_to_follow.get_path_deviation(Vector2::new(current_state.x, current_state.y)) {
                         Some(deviation) => {
                             if deviation > DEVIATION_THRESHOLD {
+                                println!("The current deviation is high");
                                 vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
                                 vel_cmd.angular.z = HARSH_GAIN * deviation;
                             } else {
@@ -147,14 +148,16 @@ fn main() -> Result<(), Error> {
                                                                                 Vector2::new(propagated_state.x, propagated_state.y)) {
                                     Some(deviation) => {
                                         if deviation > DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR {
+                                            println!("The future deviation is high");
                                             vel_cmd.linear.x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
                                             vel_cmd.angular.z = MEDIUM_GAIN * deviation;
                                         } else {
+                                            println!("The future deviation is okay");
                                             vel_cmd.angular.z = DAMPED_GAIN * deviation;
                                             let min_lin_x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
                                             let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
 
-                                            vel_cmd.linear.x = min_lin_x + (max_lin_x - min_lin_x) * deviation / (DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR);
+                                            vel_cmd.linear.x = min_lin_x + (max_lin_x - min_lin_x) * deviation.abs() / (DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR);
 
                                             std::mem::drop(min_lin_x);
                                             std::mem::drop(max_lin_x);

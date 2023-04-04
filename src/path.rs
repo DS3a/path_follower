@@ -14,11 +14,11 @@ fn perpendicular_distance(
     let slope = (point_b.y - point_a.y) / (point_b.x - point_a.x);
     let y_intercept = point_a.y - slope * point_a.x;
 
-    println!("The line equation is y = {}x + {}", &slope, &y_intercept);
+    // println!("The line equation is y = {}x + {}", &slope, &y_intercept);
 
     let dist: f64 =
         (-(slope * point_c.x) + point_c.y - y_intercept) / (1f64 + slope.powi(2)).powf(0.5);
-    println!("The distance between point_c and the line is : {}", &dist);
+    // println!("The distance between point_c and the line is : {}", &dist);
     dist
 }
 
@@ -62,6 +62,7 @@ impl Path {
             }
         }
 
+/*
         println!(
             "the minimum distance is {:?}, and the index is {}",
             min_dist, min_dist_ind
@@ -69,6 +70,7 @@ impl Path {
 
         (self.path_vector[min_dist_ind], min_dist_ind)
     }
+*/
 
     // get the displacement of the state from the path
     pub fn get_path_deviation(&self, state: Vector2<f64>) -> Option<f64> {
