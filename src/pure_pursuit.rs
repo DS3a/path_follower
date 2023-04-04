@@ -66,7 +66,7 @@ fn main() -> Result<(), Error> {
                 // set reference odom
                 *path_subscription_reference_odom_ptr.lock().unwrap() = Some(odom.clone());
             } else {
-                println!("The odom pointer is None, please make sure the odometry topic is being published to")
+                println!("The odom pointer is None, please make sure the odometry topic is being published to");
             }
         },
     );
@@ -127,7 +127,6 @@ fn main() -> Result<(), Error> {
             let path_to_follow_opt = & *odom_subscription_path_ptr.lock().unwrap();
             match path_to_follow_opt {
                 Some(path_to_follow) => {
-                    println!("The twist msg is {:?}", vel_cmd);
                     match path_to_follow.get_path_deviation(Vector2::new(current_state.x, current_state.y)) {
                         Some(deviation) => {
                             if deviation > DEVIATION_THRESHOLD {
@@ -135,13 +134,6 @@ fn main() -> Result<(), Error> {
                                 vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
                                 vel_cmd.angular.z = HARSH_GAIN * deviation;
                             } else {
-                                /*
-                                 * TODO
-                                 * propagate the state
-                                 * check if the propagated state is in the path
-                                 ** if it is, then check deviation and stuff, and adjust the angular velocity with medium/low gain
-                                 ** if it is not,
-                                 */
 
                                 let mut propagated_state = current_state.clone().propagate(DT);
                                 match path_to_follow.get_propagtation_deviation(Vector2::new(current_state.x, current_state.y),
