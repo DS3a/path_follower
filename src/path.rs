@@ -67,13 +67,14 @@ impl Path {
             "the minimum distance is {:?}, and the index is {}",
             min_dist, min_dist_ind
         );
-
+*/
         (self.path_vector[min_dist_ind], min_dist_ind)
     }
-*/
+
 
     // get the displacement of the state from the path
     pub fn get_path_deviation(&self, state: Vector2<f64>) -> Option<f64> {
+        println!("getting the deivation of the path from {}", &state);
         let (closest_point, closest_point_idx) = self.find_closest_point(state.clone(), None);
         if closest_point_idx == self.path_vector.len() - 1 {
             println!("The goal has been reached, line can't be formed");

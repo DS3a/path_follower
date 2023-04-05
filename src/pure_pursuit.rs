@@ -15,7 +15,7 @@ use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
 static DT: f64 = 0.95492;
-static DEVIATION_THRESHOLD: f64 = 0.3; // in meters
+static DEVIATION_THRESHOLD: f64 = 0.05; // in meters
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
 static DEACCELERATION_DECAY: f64 = 0.5;
@@ -28,7 +28,7 @@ static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 static MAX_ANG_Z: f64 = 1.0471975;
 
 static HARSH_GAIN: f64 = 1.0;
-static MEDIUM_GAIN: f64 = 0.5;
+static MEDIUM_GAIN: f64 = 0.50;
 static DAMPED_GAIN: f64 = 0.25;
 
 fn main() -> Result<(), Error> {
@@ -64,6 +64,7 @@ fn main() -> Result<(), Error> {
             *path_subscription_path_ptr.lock().unwrap() = Some(path_to_follow);
             if let Some(odom) = &*path_subscription_odom_ptr.lock().unwrap() {
                 // set reference odom
+                println!("setting the reference odom as {:?}", &odom.pose.pose.position);
                 *path_subscription_reference_odom_ptr.lock().unwrap() = Some(odom.clone());
             } else {
                 println!("The odom pointer is None, please make sure the odometry topic is being published to");
@@ -127,14 +128,15 @@ fn main() -> Result<(), Error> {
             let path_to_follow_opt = & *odom_subscription_path_ptr.lock().unwrap();
             match path_to_follow_opt {
                 Some(path_to_follow) => {
+                    println!("The current odom is {:?}", &msg.pose.pose.position);
                     match path_to_follow.get_path_deviation(Vector2::new(current_state.x, current_state.y)) {
                         Some(deviation) => {
                             if deviation > DEVIATION_THRESHOLD {
-                                println!("The current deviation is high");
+                                println!("The current deviation is high {}", &deviation);
                                 vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
-                                vel_cmd.angular.z = HARSH_GAIN * deviation;
+                                vel_cmd.angular.z = - HARSH_GAIN * deviation;
                             } else {
-
+                                println!("the current deviation ({}), is lower than the threshold, propagating the state", &deviation);
                                 let mut propagated_state = current_state.clone().propagate(DT);
                                 match path_to_follow.get_propagtation_deviation(Vector2::new(current_state.x, current_state.y),
                                                                                 Vector2::new(propagated_state.x, propagated_state.y)) {
@@ -142,10 +144,10 @@ fn main() -> Result<(), Error> {
                                         if deviation > DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR {
                                             println!("The future deviation is high");
                                             vel_cmd.linear.x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
-                                            vel_cmd.angular.z = MEDIUM_GAIN * deviation;
+                                            vel_cmd.angular.z = - MEDIUM_GAIN * deviation;
                                         } else {
                                             println!("The future deviation is okay");
-                                            vel_cmd.angular.z = DAMPED_GAIN * deviation;
+                                            vel_cmd.angular.z = - DAMPED_GAIN * deviation;
                                             let min_lin_x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
                                             let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
 
