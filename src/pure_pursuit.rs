@@ -87,6 +87,7 @@ fn main() -> Result<(), Error> {
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: OdometryMsg| {
 
+            println!("Received odom");
             // calulate the current state with respect to the current reference frame.
             // The reference frame is the position of base_link when the path was generated
             let mut current_state = dynamics_solver::differential_drive::State::new(0f64, 0f64, 0f64);
