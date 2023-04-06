@@ -54,6 +54,7 @@ fn main() -> Result<(), Error> {
     let path_subscription_path_ptr = Arc::clone(&path_ptr);
     let path_subscription_odom_ptr = Arc::clone(&odom_ptr);
     let path_subscription_reference_odom_ptr = Arc::clone(&reference_odom_ptr);
+    println!("creating the path subscription");
     let _path_subscription = node.create_subscription(
         "/path_local",
         rclrs::QOS_PROFILE_DEFAULT,
@@ -80,6 +81,7 @@ fn main() -> Result<(), Error> {
     let odom_subscription_max_lin_x_ptr = Arc::clone(&max_lin_x_ptr);
     let odom_subscription_min_lin_x_ptr = Arc::clone(&min_lin_x_ptr);
     let odom_subscription_cmd_vel_publisher_ptr = Arc::clone(&cmd_vel_publisher_ptr);
+    println!("Creating the odom subscription");
     let _odom_subscription = node.create_subscription(
         "/laser_odom",
         rclrs::QOS_PROFILE_DEFAULT,
