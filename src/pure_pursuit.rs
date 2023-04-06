@@ -15,7 +15,7 @@ use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
 static DT: f64 = 1.1492;
-static DEVIATION_THRESHOLD: f64 = 0.08; // in meters
+static DEVIATION_THRESHOLD: f64 = 0.04; // in meters
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
 static DEACCELERATION_DECAY: f64 = 0.5;
