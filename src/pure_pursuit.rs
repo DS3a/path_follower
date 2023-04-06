@@ -27,9 +27,9 @@ static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 
 static MAX_ANG_Z: f64 = 1.0471975;
 
-static HARSH_GAIN: f64 = -10.0;
-static MEDIUM_GAIN: f64 = -8.50;
-static DAMPED_GAIN: f64 = -5.25;
+static HARSH_GAIN: f64 = -8.0;
+static MEDIUM_GAIN: f64 = -6.50;
+static DAMPED_GAIN: f64 = -4.25;
 
 fn main() -> Result<(), Error> {
     let context = rclrs::Context::new(env::args())?;
