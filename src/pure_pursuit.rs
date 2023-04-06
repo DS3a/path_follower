@@ -62,7 +62,7 @@ fn main() -> Result<(), Error> {
             let path_to_follow = path::Path::new(msg);
             // path_to_follow.find_closest_point(Vector2::new(0.2f64, 0f64));
             for i in 0..msg.poses.len() {
-                println!("got path {}", &msg.poses[i]);
+                println!("got path {:?}", &msg.poses[i]);
             }
 
             *path_subscription_path_ptr.lock().unwrap() = Some(path_to_follow);
