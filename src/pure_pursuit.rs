@@ -14,7 +14,7 @@ use nalgebra::Vector2;
 use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
-static DT: f64 = 1.4492;
+static DT: f64 = 0.4492;
 static DEVIATION_THRESHOLD: f64 = 0.08; // in meters
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
@@ -61,9 +61,6 @@ fn main() -> Result<(), Error> {
             // println!("received path");
             let path_to_follow = path::Path::new(msg.clone());
             // path_to_follow.find_closest_point(Vector2::new(0.2f64, 0f64));
-            for i in 0..msg.poses.len() {
-                println!("got path {:?}", &msg.poses[i].pose.position);
-            }
 
             *path_subscription_path_ptr.lock().unwrap() = Some(path_to_follow);
             if let Some(odom) = &*path_subscription_odom_ptr.lock().unwrap() {
