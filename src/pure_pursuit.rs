@@ -15,7 +15,7 @@ use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
 static DT: f64 = 1.1492;
-static DEVIATION_THRESHOLD: f64 = 0.04; // in meters
+static DEVIATION_THRESHOLD: f64 = 0.005; // in meters
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
 static DEACCELERATION_DECAY: f64 = 0.5;
@@ -29,7 +29,7 @@ static MAX_ANG_Z: f64 = 1.0471975;
 
 static HARSH_GAIN: f64 = -8.1;
 static MEDIUM_GAIN: f64 = -7.30;
-static DAMPED_GAIN: f64 = -5.25;
+static DAMPED_GAIN: f64 = -2.25;
 
 fn main() -> Result<(), Error> {
     let context = rclrs::Context::new(env::args())?;
