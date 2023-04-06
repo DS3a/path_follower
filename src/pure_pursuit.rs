@@ -20,16 +20,16 @@ static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
 static DEACCELERATION_DECAY: f64 = 0.5;
 
-static MIN_LIN_X: f64 = 0.443;
-static MAX_LIN_X: f64 = 1.0;
+static MIN_LIN_X: f64 = 0.243;
+static MAX_LIN_X: f64 = 0.30;
 
 static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 
 static MAX_ANG_Z: f64 = 1.0471975;
 
-static HARSH_GAIN: f64 = 1.0;
-static MEDIUM_GAIN: f64 = 0.50;
-static DAMPED_GAIN: f64 = 0.25;
+static HARSH_GAIN: f64 = -10.0;
+static MEDIUM_GAIN: f64 = -8.50;
+static DAMPED_GAIN: f64 = -5.25;
 
 fn main() -> Result<(), Error> {
     let context = rclrs::Context::new(env::args())?;
@@ -62,7 +62,7 @@ fn main() -> Result<(), Error> {
             let path_to_follow = path::Path::new(msg.clone());
             // path_to_follow.find_closest_point(Vector2::new(0.2f64, 0f64));
             for i in 0..msg.poses.len() {
-                println!("got path {:?}", &msg.poses[i]);
+                println!("got path {:?}", &msg.poses[i].pose.position);
             }
 
             *path_subscription_path_ptr.lock().unwrap() = Some(path_to_follow);
@@ -84,7 +84,7 @@ fn main() -> Result<(), Error> {
     let odom_subscription_min_lin_x_ptr = Arc::clone(&min_lin_x_ptr);
     let odom_subscription_cmd_vel_publisher_ptr = Arc::clone(&cmd_vel_publisher_ptr);
     let _odom_subscription = node.create_subscription(
-        "/odometry/filtered",
+        "/laser_odom",
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: OdometryMsg| {
 
@@ -138,7 +138,7 @@ fn main() -> Result<(), Error> {
                             if deviation > DEVIATION_THRESHOLD {
                                 println!("The current deviation is high {}", &deviation);
                                 vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
-                                vel_cmd.angular.z = - HARSH_GAIN * deviation;
+                                vel_cmd.angular.z = HARSH_GAIN * deviation;
                             } else {
                                 println!("the current deviation ({}), is lower than the threshold, propagating the state", &deviation);
                                 let mut propagated_state = current_state.clone().propagate(DT);
@@ -148,10 +148,10 @@ fn main() -> Result<(), Error> {
                                         if deviation > DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR {
                                             println!("The future deviation is high");
                                             vel_cmd.linear.x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
-                                            vel_cmd.angular.z = - MEDIUM_GAIN * deviation;
+                                            vel_cmd.angular.z = MEDIUM_GAIN * deviation;
                                         } else {
                                             println!("The future deviation is okay");
-                                            vel_cmd.angular.z = - DAMPED_GAIN * deviation;
+                                            vel_cmd.angular.z = DAMPED_GAIN * deviation;
                                             let min_lin_x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
                                             let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
 
