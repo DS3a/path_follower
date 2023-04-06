@@ -29,7 +29,7 @@ static MAX_ANG_Z: f64 = 1.0471975;
 
 static HARSH_GAIN: f64 = -30.1;
 static MEDIUM_GAIN: f64 = -25.30;
-static DAMPED_GAIN: f64 = -1.25;
+static DAMPED_GAIN: f64 = -18.25;
 
 fn main() -> Result<(), Error> {
     let context = rclrs::Context::new(env::args())?;
