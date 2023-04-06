@@ -28,7 +28,7 @@ static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 static MAX_ANG_Z: f64 = 1.0471975;
 
 static HARSH_GAIN: f64 = -8.1;
-static MEDIUM_GAIN: f64 = -5.30;
+static MEDIUM_GAIN: f64 = -6.30;
 static DAMPED_GAIN: f64 = -1.25;
 
 fn main() -> Result<(), Error> {
