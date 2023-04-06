@@ -14,7 +14,7 @@ use nalgebra::Vector2;
 use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
-static DT: f64 = 0.4492;
+static DT: f64 = 1.1492;
 static DEVIATION_THRESHOLD: f64 = 0.08; // in meters
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.5;
 
@@ -27,8 +27,8 @@ static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 
 static MAX_ANG_Z: f64 = 1.0471975;
 
-static HARSH_GAIN: f64 = -6.5;
-static MEDIUM_GAIN: f64 = -5.50;
+static HARSH_GAIN: f64 = -6.1;
+static MEDIUM_GAIN: f64 = -5.30;
 static DAMPED_GAIN: f64 = -4.25;
 
 fn main() -> Result<(), Error> {
