@@ -59,7 +59,7 @@ fn main() -> Result<(), Error> {
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: PathMsg| {
             // println!("received path");
-            let path_to_follow = path::Path::new(msg);
+            let path_to_follow = path::Path::new(msg.clone());
             // path_to_follow.find_closest_point(Vector2::new(0.2f64, 0f64));
             for i in 0..msg.poses.len() {
                 println!("got path {:?}", &msg.poses[i]);
