@@ -43,9 +43,13 @@ impl Path {
         &self,
         point: Vector2<f64>,
         start_ind_option: Option<usize>,
-    ) -> (Vector2<f64>, usize) {
+    ) -> Option<(Vector2<f64>, usize)> {
         let mut min_dist: Option<f64> = None;
         let mut min_dist_ind: usize = 0;
+
+        if self.path_vector.len() == 0 {
+            return None;
+        }
 
         for pose_index in start_ind_option.unwrap_or(0)..(self.path_vector.len()) {
             match &mut min_dist {
@@ -68,21 +72,24 @@ impl Path {
             min_dist, min_dist_ind
         );
 */
-        (self.path_vector[min_dist_ind], min_dist_ind)
+        Some((self.path_vector[min_dist_ind], min_dist_ind))
     }
 
 
     // get the displacement of the state from the path
     pub fn get_path_deviation(&self, state: Vector2<f64>) -> Option<f64> {
         println!("getting the deivation of the path from {}", &state);
-        let (closest_point, closest_point_idx) = self.find_closest_point(state.clone(), None);
-        if closest_point_idx == self.path_vector.len() - 1 {
-            println!("The goal has been reached, line can't be formed");
-            None
+        if let Some((closest_point, closest_point_idx)) = self.find_closest_point(state.clone(), None) {
+            if closest_point_idx == self.path_vector.len() - 1 {
+                println!("The goal has been reached, line can't be formed");
+                None
+            } else {
+                let point_a = closest_point.clone();
+                let point_b = self.path_vector[closest_point_idx + 1].clone();
+                Some(perpendicular_distance(&point_a, &point_b, &state))
+            }
         } else {
-            let point_a = closest_point.clone();
-            let point_b = self.path_vector[closest_point_idx + 1].clone();
-            Some(perpendicular_distance(&point_a, &point_b, &state))
+            None
         }
     }
 
@@ -91,22 +98,28 @@ impl Path {
         state: Vector2<f64>,
         future_state: Vector2<f64>,
     ) -> Option<f64> {
-        let (starting_point, starting_point_idx) = self.find_closest_point(state.clone(), None);
+        if let Some((starting_point, starting_point_idx)) = self.find_closest_point(state.clone(), None) {
 
-        // according to the control flow, this will probably never be reached
-        if starting_point_idx == self.path_vector.len() - 1 {
-            println!("The goal has been reached, line can't be formed");
-            None
-        } else {
-            let (goal_point, goal_idx) =
-                self.find_closest_point(future_state.clone(), Some(starting_point_idx));
-            if goal_idx == self.path_vector.len() - 1 {
+            // according to the control flow, this will probably never be reached
+            if starting_point_idx == self.path_vector.len() - 1 {
+                println!("The goal has been reached, line can't be formed");
                 None
             } else {
-                let point_a = goal_point;
-                let point_b = self.path_vector[goal_idx + 1].clone();
-                Some(perpendicular_distance(&point_a, &point_b, &future_state))
+                if let Some((goal_point, goal_idx)) =
+                    self.find_closest_point(future_state.clone(), Some(starting_point_idx)) {
+                        if goal_idx == self.path_vector.len() - 1 {
+                            None
+                        } else {
+                            let point_a = goal_point;
+                            let point_b = self.path_vector[goal_idx + 1].clone();
+                            Some(perpendicular_distance(&point_a, &point_b, &future_state))
+                        }
+                    } else {
+                        None
+                    }
             }
+        } else {
+            None
         }
     }
 
