@@ -83,7 +83,7 @@ fn main() -> Result<(), Error> {
     let odom_subscription_cmd_vel_publisher_ptr = Arc::clone(&cmd_vel_publisher_ptr);
     println!("Creating the odom subscription");
     let _odom_subscription = node.create_subscription(
-        "/laser_odom",
+        "/odometry/filtered",
         rclrs::QOS_PROFILE_DEFAULT,
         move |msg: OdometryMsg| {
 
