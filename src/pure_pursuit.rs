@@ -27,7 +27,7 @@ static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
 
 static MAX_ANG_Z: f64 = 1.0471975;
 
-static HARSH_GAIN: f64 = -2.8;
+static HARSH_GAIN: f64 = -4.8;
 static MEDIUM_GAIN: f64 = -2.20;
 static DAMPED_GAIN: f64 = -1.225;
 
