@@ -6,6 +6,7 @@ use rclrs;
 use std::env;
 use std::sync::{Arc, Mutex};
 use std::thread;
+use std_msgs::msg::Bool as BoolMsg;
 
 use dynamics_solver;
 mod path;
@@ -36,6 +37,7 @@ fn main() -> Result<(), Error> {
     let mut node = rclrs::create_node(&context, "pratham_path_follower")?;
 
     let path_ptr: Arc<Mutex<Option<path::Path>>> = Arc::new(Mutex::new(Option::<path::Path>::None));
+    let path_found_ptr: Arc<Mutex<Option<bool>>> = Arc::new(Mutex::new(Option::<bool>::None));
     let odom_ptr: Arc<Mutex<Option<OdometryMsg>>> =
         Arc::new(Mutex::new(Option::<OdometryMsg>::None));
 
@@ -74,8 +76,19 @@ fn main() -> Result<(), Error> {
         },
     );
 
+    let path_found_subscription_path_found_ptr = Arc::clone(&path_found_ptr);
+    println!("creating the path_found subscription");
+    let _path_found_subscription = node.create_subscription(
+        "/path_found",
+        rclrs::QOS_PROFILE_DEFAULT,
+        move |msg: BoolMsg| {
+            *path_found_subscription_path_found_ptr.lock().unwrap() = Some(msg.data);
+        },
+    );
+
     let odom_subscription_odom_ptr = Arc::clone(&odom_ptr);
     let odom_subscription_path_ptr = Arc::clone(&path_ptr);
+    let odom_subscription_path_found_ptr = Arc::clone(&path_found_ptr);
     let odom_subscription_reference_odom_ptr = Arc::clone(&reference_odom_ptr);
     let odom_subscription_max_ang_z_ptr = Arc::clone(&max_ang_z_ptr);
     let odom_subscription_max_lin_x_ptr = Arc::clone(&max_lin_x_ptr);
@@ -129,53 +142,68 @@ fn main() -> Result<(), Error> {
             let mut vel_cmd = TwistMsg::default();
 
             // now to find the closest point in the path to the the current state
+            let path_found_opt = & *odom_subscription_path_found_ptr.lock().unwrap();
             let path_to_follow_opt = & *odom_subscription_path_ptr.lock().unwrap();
-            match path_to_follow_opt {
-                Some(path_to_follow) => {
-                    println!("The current odom is {:?}", &msg.pose.pose.position);
-                    match path_to_follow.get_path_deviation(Vector2::new(current_state.x, current_state.y)) {
-                        Some(deviation) => {
-                            if deviation > DEVIATION_THRESHOLD {
-                                println!("The current deviation is high {}", &deviation);
-                                vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
-                                vel_cmd.angular.z = HARSH_GAIN * deviation;
-                            } else {
-                                println!("the current deviation ({}), is lower than the threshold, propagating the state", &deviation);
-                                let mut propagated_state = current_state.clone().propagate(DT);
-                                match path_to_follow.get_propagtation_deviation(Vector2::new(current_state.x, current_state.y),
-                                                                                Vector2::new(propagated_state.x, propagated_state.y)) {
-                                    Some(deviation) => {
-                                        if deviation > DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR {
-                                            println!("The future deviation is high");
-                                            vel_cmd.linear.x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
-                                            vel_cmd.angular.z = MEDIUM_GAIN * deviation;
-                                        } else {
-                                            println!("The future deviation is okay");
-                                            vel_cmd.angular.z = DAMPED_GAIN * deviation;
-                                            let min_lin_x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
-                                            let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
 
-                                            vel_cmd.linear.x = min_lin_x + (max_lin_x - min_lin_x) * deviation.abs() / (DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR);
 
-                                            std::mem::drop(min_lin_x);
-                                            std::mem::drop(max_lin_x);
-                                        }
-                                    },
-                                    None => { // if the propagated state is near/beyond the goal; start deceleration
-                                        vel_cmd.linear.x = &msg.twist.twist.linear.x * DEACCELERATION_DECAY;
-                                        vel_cmd.angular.z = &msg.twist.twist.angular.z * DEACCELERATION_DECAY;
-                                    }
-                                }
-
-                            }
-                        }, None => {
-                            println!("The goal has been reached, sending stop command");
-                        }
-                    }
-                },
+            match path_found_opt {
                 None => {
                     println!("The path is empty, is it being published?, sending stop command");
                 },
+                Some(path_found) => {
+                    if *path_found {
+                        match path_to_follow_opt {
+                            Some(path_to_follow) => {
+                                println!("The current odom is {:?}", &msg.pose.pose.position);
+                                match path_to_follow.get_path_deviation(Vector2::new(current_state.x, current_state.y)) {
+                                    Some(deviation) => {
+                                        if deviation > DEVIATION_THRESHOLD {
+                                            println!("The current deviation is high {}", &deviation);
+                                            vel_cmd.linear.x = MIN_LIN_X_FOR_ROT;
+                                            vel_cmd.angular.z = HARSH_GAIN * deviation;
+                                        } else {
+                                            println!("the current deviation ({}), is lower than the threshold, propagating the state", &deviation);
+                                            let mut propagated_state = current_state.clone().propagate(DT);
+                                            match path_to_follow.get_propagtation_deviation(Vector2::new(current_state.x, current_state.y),
+                                                                                            Vector2::new(propagated_state.x, propagated_state.y)) {
+                                                Some(deviation) => {
+                                                    if deviation > DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR {
+                                                        println!("The future deviation is high");
+                                                        vel_cmd.linear.x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
+                                                        vel_cmd.angular.z = MEDIUM_GAIN * deviation;
+                                                    } else {
+                                                        println!("The future deviation is okay");
+                                                        vel_cmd.angular.z = DAMPED_GAIN * deviation;
+                                                        let min_lin_x = *odom_subscription_min_lin_x_ptr.lock().unwrap();
+                                                        let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
+
+                                                        vel_cmd.linear.x = min_lin_x + (max_lin_x - min_lin_x) * deviation.abs() / (DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR);
+
+                                                        std::mem::drop(min_lin_x);
+                                                        std::mem::drop(max_lin_x);
+                                                    }
+                                                },
+                                                None => { // if the propagated state is near/beyond the goal; start deceleration
+                                                    vel_cmd.linear.x = &msg.twist.twist.linear.x * DEACCELERATION_DECAY;
+                                                    vel_cmd.angular.z = &msg.twist.twist.angular.z * DEACCELERATION_DECAY;
+                                                }
+                                            }
+
+                                        }
+                                    }, None => {
+                                        println!("The goal has been reached, sending stop command");
+                                    }
+                                }
+                            },
+                            None => {
+                                println!("The path is empty, is it being published?, sending stop command");
+                            },
+                        }
+                    } else {
+                        println!("The path planner is unable to find path, executing recovery behaviour");
+                        vel_cmd.linear.x = -0.2;
+                    }
+                }
             }
 
             let max_lin_x = *odom_subscription_max_lin_x_ptr.lock().unwrap();
