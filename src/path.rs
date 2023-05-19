@@ -75,8 +75,8 @@ impl Path {
         Some((self.path_vector[min_dist_ind], min_dist_ind))
     }
 
-    // get the displacement of the state from the path
-    pub fn get_path_deviation(&self, state: Vector2<f64>) -> Option<f64> {
+    // get the linear as well as angular displacement of the state from the path
+    pub fn get_path_deviation(&self, state: Vector2<f64>) -> Option<(f64, f64)> {
         println!("getting the deivation of the path from {}", &state);
         if let Some((closest_point, closest_point_idx)) =
             self.find_closest_point(state.clone(), None)
@@ -87,7 +87,9 @@ impl Path {
             } else {
                 let point_a = closest_point.clone();
                 let point_b = self.path_vector[closest_point_idx + 1].clone();
-                Some(perpendicular_distance(&point_a, &point_b, &state))
+                let slope = (point_b.y - point_a.y) / (point_b.x - point_a.x);
+                let angular_deviation: f64 = slope.atan2(1.0_f64);
+                Some((perpendicular_distance(&point_a, &point_b, &state), angular_deviation))
             }
         } else {
             None
