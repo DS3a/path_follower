@@ -15,26 +15,28 @@ use nalgebra::Vector2;
 use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
-static DT: f64 = 1.1492;
-static DEVIATION_THRESHOLD: f64 = 0.025; // in meters
-static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.1;
+static DT: f64 = 3.3;
+static DEVIATION_THRESHOLD: f64 = 0.015; // in meters
+static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.15;
 
-static ANGULAR_DEVIATION_THRESHOLD: f64 = 1.0472; // 60 degrees
+static ANGULAR_DEVIATION_THRESHOLD: f64 = 1.3; // 60 degrees
 
 static DEACCELERATION_DECAY: f64 = 0.5;
 
-static MIN_LIN_X: f64 = 0.243;
-static MAX_LIN_X: f64 = 0.30;
+static MIN_LIN_X: f64 = 0.6;
+static MAX_LIN_X: f64 = 0.63;
 
-static MIN_LIN_X_FOR_ROT: f64 = 0.2235;
+static MIN_LIN_X_FOR_ROT: f64 = 0.3;
 
 static MAX_ANG_Z: f64 = 1.0471975;
 
-static ANGULAR_GAIN: f64 = -2.0;
+static ANGULAR_GAIN: f64 = 1.5;
 
-static HARSH_GAIN: f64 = -4.8;
-static MEDIUM_GAIN: f64 = -2.20;
-static DAMPED_GAIN: f64 = -1.225;
+static HARSH_GAIN: f64 = -6.8;
+static MEDIUM_GAIN: f64 = -4.8;
+static DAMPED_GAIN: f64 = -3.8;
+
+
 
 fn main() -> Result<(), Error> {
     let context = rclrs::Context::new(env::args())?;
