@@ -705,6 +705,10 @@ name = "actionlib_msgs"
 version = "4.2.3"
 
 [[patch.unused]]
+name = "anymap_interfaces"
+version = "0.0.0"
+
+[[patch.unused]]
 name = "composition_interfaces"
 version = "1.2.1"
 

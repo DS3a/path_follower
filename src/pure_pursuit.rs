@@ -15,19 +15,41 @@ use nalgebra::Vector2;
 use nalgebra::{Quaternion, UnitQuaternion};
 
 // dt = lookahead time
+// The amount of time that the controller server will propagate ...
+// the current state to check the future/lookahead deviation
 static DT: f64 = 3.3;
+
+// The deviation threshold is the first threshold...
+// It is compared to the deviation of the current state of the robot from the path
+// If the current deviation is greater than the deviation threshold,
+//      it will move at linear_x = MIN_LIN_X_FOR_ROT
+//      angular_z will be a proportional control system with gain = HARSH_GAIN
+// Else, it will propagate the current state to the future by time DT to
+// predict the future state and check the future deviation/lookahead deviation
 static DEVIATION_THRESHOLD: f64 = 0.015; // in meters
+
+// If the controller server decides the the current deviation is acceptable and propagates the state to the future,
+// It will compare the future deviation to DEVATION_THRESHOLD*LOOKAHEAD_DISCOUNT_FACTOR instead of DEVATION_THRESHOLD alone
 static LOOKAHEAD_DISCOUNT_FACTOR: f64 = 1.15;
 
+// Before checking the linear displacement of the robot from the path, it'll check the angular deviation from the path.
+// and apply proportional control with ANGULAR_GAIN to the angular_z with 0 linear_x
 static ANGULAR_DEVIATION_THRESHOLD: f64 = 1.3; // 60 degrees
 
+// junk parameter, let it be, no need to tune this
 static DEACCELERATION_DECAY: f64 = 0.5;
 
+
+// minimum LINEAR_X that the robot is allowed to move at
 static MIN_LIN_X: f64 = 0.6;
+
+// maximum LINEAR_X that the robot is allowed to move at
 static MAX_LIN_X: f64 = 0.63;
 
+// the linear_x of the robot for the harsh gain condition, the name is immaterial
 static MIN_LIN_X_FOR_ROT: f64 = 0.3;
 
+// the maximum angular velocity to prescibe to the control systems
 static MAX_ANG_Z: f64 = 1.0471975;
 
 static ANGULAR_GAIN: f64 = 1.5;
@@ -36,6 +58,17 @@ static HARSH_GAIN: f64 = -6.8;
 static MEDIUM_GAIN: f64 = -4.8;
 static DAMPED_GAIN: f64 = -3.8;
 
+/*
+ * Angular gain is employed on angular_z of the current angular_deviation is greater than ANGULAR_DEVIATION_THRESHOLD
+ *      In this case, the linear_x of the robot is 0
+ * Harsh gain is employed on the angular_z of the robot if the current deviation is greater than DEVIATION_THRESHOLD
+ *      In this case, the linear_x of the robot will be MIN_LIN_X_FOR_ROT
+ * Medium gain is employed if the current deivation is fine, and the future deviation is greater than LOOKAHEAD_DISCOUNT_FACTOR*DEVIATION_THRESHOLD
+ *      In this case, the linear_x of the robot will be MIN_LIN_X
+ * Damped gain is emplyed if the current deviation ii fine, and the future deviation as well.
+ *      In this case, the linear_x of the robot will be decided by this formula:
+ *             vel_cmd.linear.x = min_lin_x + (max_lin_x - min_lin_x) * deviation.abs() / (DEVIATION_THRESHOLD * LOOKAHEAD_DISCOUNT_FACTOR);
+ */
 
 
 fn main() -> Result<(), Error> {
