@@ -41,7 +41,7 @@ static DEACCELERATION_DECAY: f64 = 0.5;
 
 
 // minimum LINEAR_X that the robot is allowed to move at
-static MIN_LIN_X: f64 = 0.6;
+static MIN_LIN_X: f64 = 0.48;
 
 // maximum LINEAR_X that the robot is allowed to move at
 static MAX_LIN_X: f64 = 0.63;
